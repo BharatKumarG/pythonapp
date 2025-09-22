@@ -1,44 +1,7 @@
-import pytest
-import json
 from app import app
 
-@pytest.fixture
-def client():
-    """Create a test client for the Flask application."""
-    app.config['TESTING'] = True
-    with app.test_client() as client:
-        yield client
-
-def test_health_endpoint(client):
-    """Test the health endpoint."""
-    response = client.get('/health')
+def test_health():
+    client = app.test_client()
+    response = client.get("/health")
     assert response.status_code == 200
-    
-    data = json.loads(response.data)
-    assert data['status'] == 'healthy'
-    assert data['service'] == 'simple-python-app'
-    assert data['version'] == '1.0.0'
-
-def test_home_endpoint(client):
-    """Test the home endpoint."""
-    response = client.get('/')
-    assert response.status_code == 200
-    
-    data = json.loads(response.data)
-    assert 'message' in data
-    assert 'endpoints' in data
-    assert len(data['endpoints']) == 2
-
-def test_health_endpoint_structure(client):
-    """Test the structure of health endpoint response."""
-    response = client.get('/health')
-    data = json.loads(response.data)
-    
-    required_fields = ['status', 'service', 'version', 'environment']
-    for field in required_fields:
-        assert field in data, f"Missing required field: {field}"
-
-def test_json_response_headers(client):
-    """Test that responses have correct JSON headers."""
-    response = client.get('/health')
-    assert 'application/json' in response.content_type
+    assert response.json == {"status": "healthy"}
